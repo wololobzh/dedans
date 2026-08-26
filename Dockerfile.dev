@@ -1,0 +1,25 @@
+FROM node:22-alpine
+
+ARG PNPM_VERSION=10.15.0
+ARG TYPESCRIPT_VERSION=6.0.3
+
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
+
+WORKDIR /app
+
+COPY package.json pnpm-workspace.yaml tsconfig.json ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY packages/application/package.json ./packages/application/package.json
+COPY packages/database/package.json ./packages/database/package.json
+COPY packages/domain/package.json ./packages/domain/package.json
+
+RUN pnpm install --no-frozen-lockfile
+
+# Guardrails: both root and API workspace must resolve TypeScript 6.0.3.
+RUN node -e "const v=require('typescript').version; if(v !== '${TYPESCRIPT_VERSION}'){throw new Error('Root TypeScript: expected ${TYPESCRIPT_VERSION}, got '+v)}"
+RUN cd apps/api && node -e "const v=require('typescript').version; if(v !== '${TYPESCRIPT_VERSION}'){throw new Error('API TypeScript: expected ${TYPESCRIPT_VERSION}, got '+v)}"
+
+COPY . .
+
+CMD ["pnpm", "dev"]

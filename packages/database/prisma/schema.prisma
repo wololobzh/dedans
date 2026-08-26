@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Campus {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  cohorts   Cohort[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Program {
+  id        String   @id @default(cuid())
+  name      String
+  cohorts   Cohort[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Cohort {
+  id          String       @id @default(cuid())
+  name        String
+  campusId    String
+  programId   String
+  startsAt    DateTime
+  endsAt      DateTime?
+  campus      Campus       @relation(fields: [campusId], references: [id])
+  program     Program      @relation(fields: [programId], references: [id])
+  enrollments Enrollment[]
+
+  @@index([campusId])
+  @@index([programId])
+}
+
+model Learner {
+  id          String       @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String?      @unique
+  enrollments Enrollment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Enrollment {
+  id        String           @id @default(cuid())
+  learnerId String
+  cohortId  String
+  status    EnrollmentStatus
+  startsAt  DateTime
+  endsAt    DateTime?
+  learner   Learner          @relation(fields: [learnerId], references: [id])
+  cohort    Cohort           @relation(fields: [cohortId], references: [id])
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([learnerId])
+  @@index([cohortId, status])
+}
+
+enum EnrollmentStatus {
+  planned
+  active
+  paused
+  completed
+  withdrawn
+  cancelled
+}
