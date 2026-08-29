@@ -408,8 +408,6 @@ Règles permanentes :
 ---
 
 # 9. Exécution
-
-
 Au début de chaque mission, annonce uniquement :
 
 * classification : FAST / STANDARD / CRITICAL ;
@@ -430,8 +428,8 @@ ou :
 
 Ne produis pas de long plan avant de commencer.
 
-Après avoir annoncé la classification et les agents utilisés, commence immédiatement les délégations et continue sans attendre une nouvelle intervention utilisateur jusqu'à MERGEABLE ou BLOCKED.
 
+Après avoir annoncé la classification et les agents utilisés, commence immédiatement les délégations et continue sans attendre une nouvelle intervention utilisateur jusqu'à MERGEABLE ou BLOCKED.
 
 ---
 

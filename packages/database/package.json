@@ -2,6 +2,8 @@
   "name": "@school-erp/database",
   "private": true,
   "version": "0.3.0",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "db:generate": "prisma generate",

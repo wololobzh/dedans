@@ -40,10 +40,12 @@ services:
       dockerfile: Dockerfile.dev
     init: true
     environment:
-      NODE_ENV: development
+      NODE_ENV: ${NODE_ENV:-development}
       API_PORT: 3001
+      API_SESSION_SECRET: ${API_SESSION_SECRET:-school-erp-local-session-secret-v1}
+      API_SESSION_SECRET_EXTERNAL: ${API_SESSION_SECRET:+true}
       DATABASE_URL: postgresql://${POSTGRES_USER:-school}:${POSTGRES_PASSWORD:-school}@postgres:5432/${POSTGRES_DB:-school_erp}?schema=public
-    command: pnpm --filter @school-erp/api dev
+    command: ["sh", "scripts/run-service.sh", "api"]
     ports:
       - "${API_PORT:-3001}:3001"
     depends_on:
@@ -66,10 +68,14 @@ services:
       dockerfile: Dockerfile.dev
     init: true
     environment:
-      NODE_ENV: development
+      NODE_ENV: ${NODE_ENV:-development}
       INTERNAL_API_URL: http://api:3001
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
-    command: pnpm --filter @school-erp/web dev
+      API_SESSION_TOKEN: ${API_SESSION_TOKEN:-}
+      API_SESSION_TOKEN_EXTERNAL: ${API_SESSION_TOKEN:+true}
+      LOCAL_SESSION_SECRET: ${API_SESSION_SECRET:-school-erp-local-session-secret-v1}
+      LOCAL_SESSION_PROFILE: ${LOCAL_SESSION_PROFILE:-national-admin}
+      LOCAL_SESSION_CAMPUS_IDS: ${LOCAL_SESSION_CAMPUS_IDS:-}
+    command: ["sh", "scripts/run-service.sh", "web"]
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:

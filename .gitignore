@@ -8,3 +8,4 @@ coverage/
 .DS_Store
 *.log
 packages/database/prisma/dev.db
+.DS_Store
