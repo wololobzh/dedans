@@ -22,4 +22,13 @@ RUN cd apps/api && node -e "const v=require('typescript').version; if(v !== '${T
 
 COPY . .
 
+# Generate Prisma Client at build time without requiring DATABASE_URL connection
+RUN DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder?schema=public" pnpm --filter @school-erp/database db:generate
+
+# Compile workspace library packages to JS so Node can resolve them at runtime
+# via their "main" field (dependency order: domain -> application -> database).
+RUN pnpm --filter @school-erp/domain build
+RUN pnpm --filter @school-erp/application build
+RUN pnpm --filter @school-erp/database build
+
 CMD ["pnpm", "dev"]

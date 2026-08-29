@@ -3,15 +3,26 @@
   "private": true,
   "version": "0.3.0",
   "scripts": {
+    "build": "tsc -p tsconfig.json",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "types": "./src/index.ts",
+  "main": "./dist/index.js",
   "dependencies": {
-    "@prisma/client": "7.9.1"
+    "@prisma/adapter-pg": "7.9.1",
+    "@prisma/client": "7.9.1",
+    "@school-erp/application": "workspace:*",
+    "@school-erp/domain": "workspace:*"
   },
   "devDependencies": {
     "prisma": "7.9.1",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "tsx": "^4.0.0"
   }
 }

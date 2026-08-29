@@ -26,8 +26,8 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-school}:${POSTGRES_PASSWORD:-school}@postgres:5432/${POSTGRES_DB:-school_erp}?schema=public
     command: >-
       sh -c "
-      pnpm --filter @school-erp/database db:generate &&
-      pnpm --filter @school-erp/database db:push
+      pnpm --filter @school-erp/database db:push -- --accept-data-loss &&
+      pnpm --filter @school-erp/database db:seed
       "
     depends_on:
       postgres:
