@@ -25,23 +25,10 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-school}:${POSTGRES_PASSWORD:-school}@postgres:5432/${POSTGRES_DB:-school_erp}?schema=public
     command: >-
-      sh -c '
-      pnpm --filter @school-erp/database db:generate &&
-      state=$$(node packages/database/scripts/migration-state.mjs) &&
-      case "$$state" in
-        empty) pnpm --filter @school-erp/database exec prisma migrate deploy ;;
-        pending) pnpm --filter @school-erp/database exec prisma migrate deploy ;;
-        partial)
-          pnpm --filter @school-erp/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script > /tmp/repair.sql &&
-          pnpm --filter @school-erp/database exec prisma db execute --file /tmp/repair.sql &&
-          for migration in 20260827000100_init 20260828000100_add_campus_lifecycle_and_audit 20260829000100_add_campus_type_and_timezone 20260829000200_allow_virtual_campus_without_city; do
-            pnpm --filter @school-erp/database exec prisma migrate resolve --applied "$$migration";
-          done ;;
-        tracked) pnpm --filter @school-erp/database exec prisma migrate deploy ;;
-        drifted) echo "Database migration history is complete but the schema is incomplete or drifted" >&2; exit 1 ;;
-        *) echo "Unknown database migration state: $$state" >&2; exit 1 ;;
-      esac && node packages/database/scripts/migration-state.mjs --verify
-      '
+      sh -c "
+      pnpm --filter @school-erp/database db:push -- --accept-data-loss &&
+      pnpm --filter @school-erp/database db:seed
+      "
     depends_on:
       postgres:
         condition: service_healthy

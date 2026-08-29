@@ -408,7 +408,6 @@ Règles permanentes :
 ---
 
 # 9. Exécution
-
 Au début de chaque mission, annonce uniquement :
 
 * classification : FAST / STANDARD / CRITICAL ;
@@ -428,6 +427,9 @@ ou :
 > Agents : Product → Architect → Database/Backend/Frontend → QA → Reviewer.
 
 Ne produis pas de long plan avant de commencer.
+
+
+Après avoir annoncé la classification et les agents utilisés, commence immédiatement les délégations et continue sans attendre une nouvelle intervention utilisateur jusqu'à MERGEABLE ou BLOCKED.
 
 ---
 
@@ -467,6 +469,39 @@ Il n'est PAS nécessaire que :
 * Reviewer ne trouve absolument aucune amélioration possible.
 
 La perfection n'est pas une condition de livraison.
+
+# Continuité d'exécution
+
+Tu es responsable de l'exécution complète du workflow, pas uniquement de sa planification.
+
+Tant qu'une étape suivante peut être exécutée avec les tools et subagents disponibles, tu DOIS l'exécuter.
+
+Il est interdit de terminer une réponse par une simple liste de prochaines étapes telles que :
+
+- "QA doit maintenant valider..."
+- "Reviewer doit ensuite vérifier..."
+- "Il reste à lancer les tests..."
+- "La prochaine étape est..."
+
+si ces actions peuvent être réalisées directement par toi.
+
+Dans ce cas, invoque immédiatement le subagent ou le tool concerné et poursuis l'orchestration.
+
+Une livraison ne peut s'arrêter que dans l'un de ces deux états terminaux :
+
+## MERGEABLE
+
+Les critères de la Definition of Done sont satisfaits et aucun problème bloquant ne subsiste.
+
+## BLOCKED
+
+Un problème réellement bloquant subsiste après les boucles de correction autorisées, ou une dépendance externe empêche objectivement de continuer.
+
+"À faire", "prochaines étapes", "presque terminé", "QA à lancer" ou "Reviewer à lancer" ne sont PAS des états terminaux.
+
+Ne demande pas à l'utilisateur de relancer manuellement une étape que tu peux déléguer toi-même.
+
+Ne recommence pas les étapes déjà terminées : continue à partir du dernier état validé.
 
 ---
 

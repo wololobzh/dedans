@@ -8,6 +8,62 @@ datasource db {
   provider = "postgresql"
 }
 
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum ProgramCategory {
+  foundation
+  specialization
+  other
+}
+
+enum CohortStatus {
+  planned
+  recruiting
+  active
+  completed
+  cancelled
+}
+
+enum EnrollmentStatus {
+  pre_registered
+  registered
+  active
+  suspended
+  withdrawn
+  completed
+  excluded
+}
+
+enum EntryType {
+  standard
+  parallel_admission
+  transfer
+  reentry
+}
+
+enum FundingType {
+  personal
+  apprenticeship
+  transition_pro
+  cpf
+  company
+  other
+}
+
+enum EnrollmentProgramStatus {
+  planned
+  active
+  completed
+  suspended
+  withdrawn
+}
+
+// ============================================================================
+// CORE ENTITIES
+// ============================================================================
+
 model Campus {
   id                 String       @id @default(cuid())
   name               String
@@ -55,59 +111,120 @@ model AuditEvent {
 }
 
 model Program {
-  id        String   @id @default(cuid())
-  name      String
-  cohorts   Cohort[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  category    ProgramCategory
+  active      Boolean  @default(true)
+  versions    ProgramVersion[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active])
+}
+
+model ProgramVersion {
+  id              String   @id @default(cuid())
+  programId       String
+  version         String
+  startValidity   DateTime
+  endValidity     DateTime?
+  durationHours   Int?
+  durationMonths  Int?
+  active          Boolean  @default(true)
+  program         Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  enrollmentPrograms EnrollmentProgram[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([programId, version])
+  @@index([programId])
+  @@index([active])
 }
 
 model Cohort {
-  id          String       @id @default(cuid())
-  name        String
-  campusId    String
-  programId   String
-  startsAt    DateTime
-  endsAt      DateTime?
-  campus      Campus       @relation(fields: [campusId], references: [id])
-  program     Program      @relation(fields: [programId], references: [id])
-  enrollments Enrollment[]
+  id              String   @id @default(cuid())
+  code            String   @unique
+  name            String
+  campusId        String
+  startDate       DateTime
+  expectedEndDate DateTime?
+  actualEndDate   DateTime?
+  status          CohortStatus
+  campus          Campus   @relation(fields: [campusId], references: [id])
+  enrollments     Enrollment[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([campusId])
-  @@index([programId])
+  @@index([status])
 }
 
 model Learner {
-  id          String       @id @default(cuid())
-  firstName   String
-  lastName    String
-  email       String?      @unique
-  enrollments Enrollment[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id              String   @id @default(cuid())
+  firstName       String
+  lastName        String
+  preferredName   String?
+  email           String?  @unique
+  phone           String?
+  birthDate       DateTime?
+  enrollments     Enrollment[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([email])
 }
 
 model Enrollment {
-  id        String           @id @default(cuid())
-  learnerId String
-  cohortId  String
-  status    EnrollmentStatus
-  startsAt  DateTime
-  endsAt    DateTime?
-  learner   Learner          @relation(fields: [learnerId], references: [id])
-  cohort    Cohort           @relation(fields: [cohortId], references: [id])
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id                  String   @id @default(cuid())
+  learnerId           String
+  cohortId            String
+  status              EnrollmentStatus
+  entryType           EntryType
+  fundingType         FundingType
+  startDate           DateTime
+  expectedEndDate     DateTime?
+  actualEndDate       DateTime?
+  learner             Learner  @relation(fields: [learnerId], references: [id])
+  cohort              Cohort   @relation(fields: [cohortId], references: [id])
+  enrollmentPrograms  EnrollmentProgram[]
+  statusHistory       EnrollmentStatusHistory[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   @@index([learnerId])
   @@index([cohortId, status])
+  @@index([status])
 }
 
-enum EnrollmentStatus {
-  planned
-  active
-  paused
-  completed
-  withdrawn
-  cancelled
+model EnrollmentProgram {
+  id               String   @id @default(cuid())
+  enrollmentId     String
+  programVersionId String
+  sequence         Int
+  status           EnrollmentProgramStatus
+  startDate        DateTime
+  expectedEndDate  DateTime?
+  actualEndDate    DateTime?
+  enrollment       Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  programVersion   ProgramVersion @relation(fields: [programVersionId], references: [id])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([enrollmentId, sequence])
+  @@index([enrollmentId, sequence])
+  @@index([programVersionId])
+}
+
+model EnrollmentStatusHistory {
+  id           String   @id @default(cuid())
+  enrollmentId String
+  status       EnrollmentStatus
+  reason       String?
+  effectiveAt  DateTime
+  createdBy    String?
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@index([enrollmentId, effectiveAt])
 }
