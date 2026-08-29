@@ -15,7 +15,7 @@ C'est tout. Au premier lancement, Docker Compose :
 1. télécharge/build les images nécessaires ;
 2. démarre PostgreSQL ;
 3. attend que PostgreSQL soit healthy ;
-4. exécute `prisma generate` puis `prisma db push` ;
+4. exécute `prisma generate`, applique les migrations et répare les bases partiellement provisionnées ;
 5. démarre l'API NestJS ;
 6. attend que `GET /health` réponde ;
 7. démarre le frontend Next.js / React.

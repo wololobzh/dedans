@@ -10,13 +10,15 @@
     "dev": "pnpm --parallel --filter @school-erp/api --filter @school-erp/web dev",
     "dev:api": "pnpm --filter @school-erp/api dev",
     "dev:web": "pnpm --filter @school-erp/web dev",
-    "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck",
+    "build": "pnpm db:generate && pnpm -r build",
+    "test": "pnpm db:generate && vitest run",
+    "typecheck": "pnpm db:generate && pnpm -r typecheck",
     "db:generate": "pnpm --filter @school-erp/database db:generate",
     "db:push": "pnpm --filter @school-erp/database db:push",
     "versions": "node scripts/check-versions.mjs"
   },
   "devDependencies": {
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vitest": "3.2.4"
   }
 }

@@ -2,13 +2,21 @@
   "name": "@school-erp/database",
   "private": true,
   "version": "0.3.0",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
   "scripts": {
+    "build": "tsc -p tsconfig.json",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:migrate": "prisma migrate deploy",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@prisma/client": "7.9.1"
+    "@prisma/adapter-pg": "7.9.1",
+    "@prisma/client": "7.9.1",
+    "@school-erp/application": "workspace:*",
+    "@school-erp/domain": "workspace:*",
+    "pg": "8.16.3"
   },
   "devDependencies": {
     "prisma": "7.9.1",
