@@ -50,7 +50,8 @@ export default async function HomePage() {
 
       <section className="next">
         <h2>Première feature recommandée</h2>
-        <p>Gestion des campus, puis effectifs actifs par campus, promotion et programme.</p>
+        <p>Le répertoire des campus est prêt pour les opérations de consultation et de gestion.</p>
+        <a className="button buttonPrimary" href="/campuses">Ouvrir la gestion des campus</a>
       </section>
     </main>
   );

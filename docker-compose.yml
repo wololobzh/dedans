@@ -25,10 +25,23 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-school}:${POSTGRES_PASSWORD:-school}@postgres:5432/${POSTGRES_DB:-school_erp}?schema=public
     command: >-
-      sh -c "
+      sh -c '
       pnpm --filter @school-erp/database db:generate &&
-      pnpm --filter @school-erp/database db:push
-      "
+      state=$$(node packages/database/scripts/migration-state.mjs) &&
+      case "$$state" in
+        empty) pnpm --filter @school-erp/database exec prisma migrate deploy ;;
+        pending) pnpm --filter @school-erp/database exec prisma migrate deploy ;;
+        partial)
+          pnpm --filter @school-erp/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script > /tmp/repair.sql &&
+          pnpm --filter @school-erp/database exec prisma db execute --file /tmp/repair.sql &&
+          for migration in 20260827000100_init 20260828000100_add_campus_lifecycle_and_audit 20260829000100_add_campus_type_and_timezone 20260829000200_allow_virtual_campus_without_city; do
+            pnpm --filter @school-erp/database exec prisma migrate resolve --applied "$$migration";
+          done ;;
+        tracked) pnpm --filter @school-erp/database exec prisma migrate deploy ;;
+        drifted) echo "Database migration history is complete but the schema is incomplete or drifted" >&2; exit 1 ;;
+        *) echo "Unknown database migration state: $$state" >&2; exit 1 ;;
+      esac && node packages/database/scripts/migration-state.mjs --verify
+      '
     depends_on:
       postgres:
         condition: service_healthy
@@ -40,10 +53,12 @@ services:
       dockerfile: Dockerfile.dev
     init: true
     environment:
-      NODE_ENV: development
+      NODE_ENV: ${NODE_ENV:-development}
       API_PORT: 3001
+      API_SESSION_SECRET: ${API_SESSION_SECRET:-school-erp-local-session-secret-v1}
+      API_SESSION_SECRET_EXTERNAL: ${API_SESSION_SECRET:+true}
       DATABASE_URL: postgresql://${POSTGRES_USER:-school}:${POSTGRES_PASSWORD:-school}@postgres:5432/${POSTGRES_DB:-school_erp}?schema=public
-    command: pnpm --filter @school-erp/api dev
+    command: ["sh", "scripts/run-service.sh", "api"]
     ports:
       - "${API_PORT:-3001}:3001"
     depends_on:
@@ -66,10 +81,14 @@ services:
       dockerfile: Dockerfile.dev
     init: true
     environment:
-      NODE_ENV: development
+      NODE_ENV: ${NODE_ENV:-development}
       INTERNAL_API_URL: http://api:3001
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
-    command: pnpm --filter @school-erp/web dev
+      API_SESSION_TOKEN: ${API_SESSION_TOKEN:-}
+      API_SESSION_TOKEN_EXTERNAL: ${API_SESSION_TOKEN:+true}
+      LOCAL_SESSION_SECRET: ${API_SESSION_SECRET:-school-erp-local-session-secret-v1}
+      LOCAL_SESSION_PROFILE: ${LOCAL_SESSION_PROFILE:-national-admin}
+      LOCAL_SESSION_CAMPUS_IDS: ${LOCAL_SESSION_CAMPUS_IDS:-}
+    command: ["sh", "scripts/run-service.sh", "web"]
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:
