@@ -19,6 +19,9 @@ async function main() {
   const campus = await prisma.campus.create({
     data: {
       name: 'Rennes',
+      code: 'RENNES',
+      type: 'physical',
+      timezone: 'Europe/Paris',
     },
   });
 
